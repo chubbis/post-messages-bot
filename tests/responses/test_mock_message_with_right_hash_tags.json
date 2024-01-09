@@ -1,0 +1,27 @@
+{
+  "ok": true,
+  "result": {
+    "message_id": 44,
+    "sender_chat": {
+      "id": -1001639630721,
+      "title": "my_test_channel",
+      "type": "channel"
+    },
+    "chat": {
+      "id": -1001639630721,
+      "title": "my_test_channel",
+      "type": "channel"
+    },
+    "date": 1657796158,
+    "forward_sender_name": "Chubbis",
+    "forward_date": 1657796157,
+    "text": "#cv test message must be more than 180 symbols and ",
+    "entities": [
+      {
+        "offset": 0,
+        "length": 3,
+        "type": "hashtag"
+      }
+    ]
+  }
+}

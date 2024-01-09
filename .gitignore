@@ -1,0 +1,11 @@
+__pychache__
+*.pyc
+.env
+/venv/
+.idea
+migrations/data/dump_creds.sh
+migrations/data/restore_creds.sh
+translations
+*.csv
+/.python-version
+supervisorctl.prod.conf
