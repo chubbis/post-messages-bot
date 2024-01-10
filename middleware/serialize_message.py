@@ -32,7 +32,7 @@ class SerializeMessageMiddleware(BaseMiddleware):
         data["model_type"] = model_type
         data["message_text"] = message[TextPath[model_type].value]
         if model_type == "photo":
-            data["files_id"] = message.photo[0].file_id
+            data["file_id"] = message.photo[0].file_id
         if model_type == "document":
             if message.document.mime_type != "application/pdf":
                 raise CancelHandler
