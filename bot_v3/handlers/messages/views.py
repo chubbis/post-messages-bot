@@ -66,12 +66,10 @@ async def process_edited_message(
     file_id: str = None,
     **_
 ) -> int:
-    print("===========================WithHashtag")
     result: dict = await ForwardedMessage.get_message(
         from_message_id=message.message_id,
         from_chat_id=message.chat.id,
     )
-    print("==========result1", result)
     if not result:
         await process_new_message(
             message=message,
@@ -88,7 +86,6 @@ async def process_edited_message(
     need_edit = await check_message_length(
         from_chat_id=message.chat.id, message_text=message_text
     )
-    print("===================need_edit", need_edit)
     # if length after edited message less than GLOBAL_VARS - need to delete message from channel
     if not need_edit:
         await process_delete_message(message=message)
@@ -106,12 +103,9 @@ async def process_edited_message(
         "photo": file_id,
         "document": file_id,
     }
-    print("==========to_chat_id", to_chat_id)
-    print("==========result_to_chat_id", result["to_chat_id"])
     if is_message_deleted:
         result: types.Message = await SEND_MESSAGE_MAP[model_type](**params)
     elif to_chat_id != result["to_chat_id"]:
-        print("================")
         await process_delete_message(message=message)
         result: types.Message = await SEND_MESSAGE_MAP[model_type](**params)
     else:

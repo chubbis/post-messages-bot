@@ -72,5 +72,4 @@ async def process_edited_message_handler(
 async def process_delete_message_handler(
     message: types.Message,
 ):
-    print("====================NOHASHTAG")
     await process_delete_message(message=message)
