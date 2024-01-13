@@ -1,3 +1,4 @@
+import json
 import typing
 from enum import Enum
 from typing import Any, Awaitable, Callable, Dict
@@ -21,6 +22,12 @@ class TextPath(Enum):
     document = "caption"
 
 
+class EntitiesPath(Enum):
+    text = "entities"
+    photo = "caption_entities"
+    document = "caption_entities"
+
+
 class SerializeMessageMiddleware(BaseMiddleware):
     def __init__(self):
         super().__init__()
@@ -34,8 +41,11 @@ class SerializeMessageMiddleware(BaseMiddleware):
         model_type = self.__get_model_type(event)
         if not model_type:
             return
+
         data["model_type"] = model_type
         data["message_text"] = getattr(event, TextPath[model_type].value, "")
+        data["entities"] = self.__get_entities(event, model_type)
+
         if model_type == "photo":
             data["file_id"] = event.photo[0].file_id
         if model_type == "document":
@@ -57,3 +67,8 @@ class SerializeMessageMiddleware(BaseMiddleware):
             model_type = ModelTypeEnum.text_message.value
 
         return model_type
+
+    @staticmethod
+    def __get_entities(message: "Message", model_type: str) -> str:
+        entities = getattr(message, EntitiesPath[model_type].value, "")
+        return json.dumps([dict(entity) for entity in entities])

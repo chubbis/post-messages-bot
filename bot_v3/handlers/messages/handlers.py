@@ -17,7 +17,11 @@ messages_router = Router()
     F.content_type.in_({"text", "photo", "document"}),
 )
 async def process_new_message_handler(
-    message: types.Message, model_type: str, message_text: str, file_id: str = None
+    message: types.Message,
+    model_type: str,
+    message_text: str,
+    file_id: str = None,
+    entities: str = "",
 ):
     """
     Forward message with vacancy or cv
@@ -25,6 +29,7 @@ async def process_new_message_handler(
     :param model_type: message type  'photo', 'text'
     :param message: aiogram Message object
     :param file_id: str - file id from tm to send in message
+    :param entities: str JSON hashtags position in text
     :return:
     """
     await process_new_message(
@@ -33,6 +38,7 @@ async def process_new_message_handler(
         message_text=message_text,
         file_id=file_id,
         to_chat_id=hashtags_service.get_to_chat_id(message.chat.id),
+        entities=entities,
     )
 
 
@@ -46,6 +52,7 @@ async def process_edited_message_handler(
     model_type: str,
     message_text: str,
     file_id: str = None,
+    entities: str = "",
 ):
     """
     Forward message with vacancy or cv
@@ -54,6 +61,7 @@ async def process_edited_message_handler(
     :param model_type: message type  'photo', 'text'
     :param message: aiogram Message object
     :param file_id: str - file id from tm to send in message
+    :param entities: str JSON hashtags position in text
     :return:
     """
     await process_edited_message(
@@ -62,6 +70,7 @@ async def process_edited_message_handler(
         message_text=message_text,
         file_id=file_id,
         to_chat_id=hashtags_service.get_to_chat_id(message.chat.id),
+        entities=entities,
     )
 
 

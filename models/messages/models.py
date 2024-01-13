@@ -2,6 +2,7 @@ import logging
 
 from asyncpg import PostgresError
 from sqlalchemy import (
+    JSON,
     BigInteger,
     Boolean,
     Column,
@@ -29,6 +30,9 @@ class ForwardedMessage(Base):
     to_chat_message_id = Column(BigInteger)
 
     model_type = Column(String, nullable=False)
+    message_text = Column(String)
+    file_id = Column(String)
+    entities = Column(JSON)
 
     is_private = Column(Boolean)
     is_deleted = Column(Boolean)
@@ -57,16 +61,22 @@ class ForwardedMessage(Base):
         to_chat_message_id: int,
         is_private: bool,
         model_type: str,
+        message_text: str,
+        file_id: str | None,
+        entities: str,
     ) -> int:
         """
         Save message after that has been forwarded
         :param from_chat_id: int - Chat from message forward
         :param from_user: User sent message
         :param to_chat_id: To what Group post the message
-        :param is_private: Is message privat
+        :param is_private: Is message private
         :param to_chat_message_id: forward message id in channel
         :param from_message_id: message id from chat, where message was sent
         :param model_type: str message model type
+        :param message_text: str message text or caption
+        :param file_id: str file id from message
+        :param entities: str JSON hashtags position in text
         :return:
         """
         query = """
@@ -80,15 +90,21 @@ class ForwardedMessage(Base):
                     is_private, 
                     updated_at, 
                     is_deleted,
-                    model_type
+                    model_type,
+                    message_text,
+                    file_id,
+                    entities
                 )
-            VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP, FALSE, $7)
-            ON CONFLICT ON CONSTRAINT forwarded_messages_from_message_id_key DO UPDATE
+            VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP, FALSE, $7, $8, $9, $10)
+            ON CONFLICT ON CONSTRAINT unq_messages_from_chat_id_from_message_id DO UPDATE
             SET 
                 updated_at = CURRENT_TIMESTAMP, 
                 is_deleted = FALSE,
                 to_chat_id = $3,
-                to_chat_message_id = $5
+                to_chat_message_id = $5,
+                message_text = $8,
+                file_id = $9,
+                entities = $10
             RETURNING to_chat_message_id
         """
         try:
@@ -102,6 +118,9 @@ class ForwardedMessage(Base):
                     to_chat_message_id,
                     is_private,
                     model_type,
+                    message_text,
+                    file_id,
+                    entities,
                 )
             return result["to_chat_message_id"]
         except PostgresError as e:
@@ -129,6 +148,27 @@ class ForwardedMessage(Base):
             return dict(result)
         except PostgresError as e:
             logging.error("Error Save forwarded message: %s", e)
+            return dict()
+
+    @classmethod
+    async def get_message_by_id(cls, message_id: int) -> dict:
+        query = """
+            SELECT *
+            FROM forwarded_messages
+            WHERE id = $1
+        """
+        try:
+            async with await adb_session() as conn:
+                result = await conn.fetchrow(
+                    query,
+                    message_id,
+                )
+            if not result:
+                return dict()
+
+            return dict(result)
+        except PostgresError as e:
+            logging.error("Something went wrong with DB (get_message_by_id): %s", e)
             return dict()
 
     @classmethod
