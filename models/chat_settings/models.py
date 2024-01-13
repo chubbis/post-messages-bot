@@ -1,7 +1,7 @@
 from sqlalchemy import BigInteger, Column, DateTime, Integer, String, text
 
-from nlib.storages.pg import adb_session
-from nlib.storages.pg_sync import Base
+from storages.pg import adb_session
+from storages.pg_sync import Base
 
 
 class ChatSettings(Base):

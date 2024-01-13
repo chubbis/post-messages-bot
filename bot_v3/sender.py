@@ -1,8 +1,6 @@
-import asyncio
-
 from aiogram import types
 
-from nlib.bot import bot
+from bot_v3.lib.bot import bot
 
 
 class SendMessage:

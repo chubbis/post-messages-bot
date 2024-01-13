@@ -1,22 +1,20 @@
-import logging
+from aiogram import F, Router, types
+from aiogram.enums import ChatType
 
-from aiogram import types
-
-from handlers.messages.views import (
+from bot_v3.handlers.messages.views import (
     process_delete_message,
     process_edited_message,
     process_new_message,
 )
-from nlib.bot import dp
-from nlib.hashtags import hashtags_service
+from bot_v3.lib.hashtags import hashtags_service
 
-logger = logging.getLogger(__name__)
+messages_router = Router()
 
 
-@dp.message_handler(
-    hashtags_service.check,
-    chat_type=[types.ChatType.SUPERGROUP, types.ChatType.GROUP],
-    content_types=["photo", "text", "document"],
+@messages_router.message(
+    F.chat.type.in_({ChatType.SUPERGROUP, ChatType.GROUP}),
+    hashtags_service,
+    F.content_type.in_({"text", "photo", "document"}),
 )
 async def process_new_message_handler(
     message: types.Message, model_type: str, message_text: str, file_id: str = None
@@ -38,10 +36,10 @@ async def process_new_message_handler(
     )
 
 
-@dp.edited_message_handler(
-    hashtags_service.check,
-    chat_type=[types.ChatType.SUPERGROUP, types.ChatType.GROUP],
-    content_types=["photo", "text", "document"],
+@messages_router.edited_message(
+    F.chat.type.in_({ChatType.SUPERGROUP, ChatType.GROUP}),
+    hashtags_service,
+    F.content_type.in_({"text", "photo", "document"}),
 )
 async def process_edited_message_handler(
     message: types.Message,
@@ -67,11 +65,12 @@ async def process_edited_message_handler(
     )
 
 
-@dp.edited_message_handler(
-    chat_type=[types.ChatType.SUPERGROUP, types.ChatType.GROUP],
-    content_types=["photo", "text", "document"],
+@messages_router.edited_message(
+    F.chat.type.in_({ChatType.SUPERGROUP, ChatType.GROUP}),
+    F.content_type.in_({"text", "photo", "document"}),
 )
 async def process_delete_message_handler(
     message: types.Message,
 ):
+    print("====================NOHASHTAG")
     await process_delete_message(message=message)
