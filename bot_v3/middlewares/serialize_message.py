@@ -31,7 +31,6 @@ class SerializeMessageMiddleware(BaseMiddleware):
         event: "Message",
         data: Dict[str, Any],
     ):
-        print("=================")
         model_type = self.__get_model_type(event)
         if not model_type:
             return
