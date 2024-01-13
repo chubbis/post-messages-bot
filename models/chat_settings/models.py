@@ -1,4 +1,12 @@
-from sqlalchemy import BigInteger, Column, DateTime, Integer, String, text, UniqueConstraint
+from sqlalchemy import (
+    BigInteger,
+    Column,
+    DateTime,
+    Integer,
+    String,
+    UniqueConstraint,
+    text,
+)
 
 from storages.pg import adb_session
 from storages.pg_sync import Base
