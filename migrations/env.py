@@ -13,7 +13,7 @@ config = context.config
 # This line sets up loggers basically.
 fileConfig(config.config_file_name)
 
-from nlib.storages.pg_sync import Base
+from storages.pg_sync import Base
 from models.hashtags.models import Hashtags
 from models.messages.models import ForwardedMessage
 from models.chat_settings.models import ChatSettings
