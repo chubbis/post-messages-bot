@@ -1,10 +1,9 @@
 from aiogram import types
 
+from bot_v3.handlers.messages.utils.add_author import add_author
+from bot_v3.handlers.messages.utils.check_message_min_length import check_message_length
+from bot_v3.sender import SendMessage
 from models.messages.models import ForwardedMessage
-from nlib.sender import SendMessage
-
-from .utils.add_author import add_author
-from .utils.check_message_min_length import check_message_length
 
 SEND_MESSAGE_MAP = {
     "text": SendMessage.send_message,
@@ -23,6 +22,7 @@ async def process_new_message(
     model_type: str,
     message_text: str,
     to_chat_id: int,
+    entities: str,
     file_id: str = None,
 ) -> int:
     need_forward = await check_message_length(
@@ -56,6 +56,9 @@ async def process_new_message(
         is_private=is_private,
         to_chat_message_id=result.message_id,
         model_type=model_type,
+        entities=entities,
+        file_id=file_id,
+        message_text=message_text,
     )
 
 
@@ -64,6 +67,7 @@ async def process_edited_message(
     model_type: str,
     message_text: str,
     to_chat_id: int,
+    entities: str,
     file_id: str = None,
     **_
 ) -> int:
@@ -78,6 +82,7 @@ async def process_edited_message(
             message_text=message_text,
             file_id=file_id,
             to_chat_id=to_chat_id,
+            entities=entities,
         )
         return 0
 
@@ -125,6 +130,9 @@ async def process_edited_message(
         to_chat_message_id=result.message_id,
         model_type=model_type,
         is_private=is_private,
+        message_text=message_text,
+        entities=entities,
+        file_id=file_id,
     )
 
 

@@ -12,8 +12,8 @@ from sqlalchemy import (
     text,
 )
 
-from nlib.storages.pg import adb_session
-from nlib.storages.pg_sync import Base
+from storages.pg import adb_session
+from storages.pg_sync import Base
 
 
 class Hashtags(Base):

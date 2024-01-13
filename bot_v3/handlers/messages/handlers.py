@@ -1,25 +1,27 @@
-import logging
+from aiogram import F, Router, types
+from aiogram.enums import ChatType
 
-from aiogram import types
-
-from handlers.messages.views import (
+from bot_v3.handlers.messages.views import (
     process_delete_message,
     process_edited_message,
     process_new_message,
 )
-from nlib.bot import dp
-from nlib.hashtags import hashtags_service
+from bot_v3.lib.hashtags import hashtags_service
 
-logger = logging.getLogger(__name__)
+messages_router = Router()
 
 
-@dp.message_handler(
-    hashtags_service.check,
-    chat_type=[types.ChatType.SUPERGROUP, types.ChatType.GROUP],
-    content_types=["photo", "text", "document"],
+@messages_router.message(
+    F.chat.type.in_({ChatType.SUPERGROUP, ChatType.GROUP}),
+    hashtags_service,
+    F.content_type.in_({"text", "photo", "document"}),
 )
 async def process_new_message_handler(
-    message: types.Message, model_type: str, message_text: str, file_id: str = None
+    message: types.Message,
+    model_type: str,
+    message_text: str,
+    file_id: str = None,
+    entities: str = "",
 ):
     """
     Forward message with vacancy or cv
@@ -27,6 +29,7 @@ async def process_new_message_handler(
     :param model_type: message type  'photo', 'text'
     :param message: aiogram Message object
     :param file_id: str - file id from tm to send in message
+    :param entities: str JSON hashtags position in text
     :return:
     """
     await process_new_message(
@@ -35,19 +38,21 @@ async def process_new_message_handler(
         message_text=message_text,
         file_id=file_id,
         to_chat_id=hashtags_service.get_to_chat_id(message.chat.id),
+        entities=entities,
     )
 
 
-@dp.edited_message_handler(
-    hashtags_service.check,
-    chat_type=[types.ChatType.SUPERGROUP, types.ChatType.GROUP],
-    content_types=["photo", "text", "document"],
+@messages_router.edited_message(
+    F.chat.type.in_({ChatType.SUPERGROUP, ChatType.GROUP}),
+    hashtags_service,
+    F.content_type.in_({"text", "photo", "document"}),
 )
 async def process_edited_message_handler(
     message: types.Message,
     model_type: str,
     message_text: str,
     file_id: str = None,
+    entities: str = "",
 ):
     """
     Forward message with vacancy or cv
@@ -56,6 +61,7 @@ async def process_edited_message_handler(
     :param model_type: message type  'photo', 'text'
     :param message: aiogram Message object
     :param file_id: str - file id from tm to send in message
+    :param entities: str JSON hashtags position in text
     :return:
     """
     await process_edited_message(
@@ -64,12 +70,13 @@ async def process_edited_message_handler(
         message_text=message_text,
         file_id=file_id,
         to_chat_id=hashtags_service.get_to_chat_id(message.chat.id),
+        entities=entities,
     )
 
 
-@dp.edited_message_handler(
-    chat_type=[types.ChatType.SUPERGROUP, types.ChatType.GROUP],
-    content_types=["photo", "text", "document"],
+@messages_router.edited_message(
+    F.chat.type.in_({ChatType.SUPERGROUP, ChatType.GROUP}),
+    F.content_type.in_({"text", "photo", "document"}),
 )
 async def process_delete_message_handler(
     message: types.Message,
