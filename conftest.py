@@ -15,7 +15,7 @@ def pytest_sessionstart(session):
 
 @pytest.fixture(scope="session")
 async def setup_db():
-    from nlib.storages.pg import AsyncDbManager
+    from storages.pg import AsyncDbManager
 
     # checkout to default postgres DB to terminate test DB's possible connections
     pg_base_local_pool = AsyncDbManager(config.PG_POSTGRES_DSN)

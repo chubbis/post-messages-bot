@@ -1,7 +1,7 @@
-from sqlalchemy import BigInteger, Column, DateTime, Integer, String, text
+from sqlalchemy import BigInteger, Column, DateTime, Integer, String, text, UniqueConstraint
 
-from nlib.storages.pg import adb_session
-from nlib.storages.pg_sync import Base
+from storages.pg import adb_session
+from storages.pg_sync import Base
 
 
 class ChatSettings(Base):
@@ -19,6 +19,14 @@ class ChatSettings(Base):
         DateTime,
         server_default=text("CURRENT_TIMESTAMP"),
         onupdate=text("CURRENT_TIMESTAMP"),
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "chat_id",
+            "variable_name",
+            name="unq_messages_chat_id_variable_name",
+        ),
     )
 
     @classmethod

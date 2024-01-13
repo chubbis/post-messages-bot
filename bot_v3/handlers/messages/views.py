@@ -1,10 +1,9 @@
 from aiogram import types
 
+from bot_v3.handlers.messages.utils.add_author import add_author
+from bot_v3.handlers.messages.utils.check_message_min_length import check_message_length
+from bot_v3.sender import SendMessage
 from models.messages.models import ForwardedMessage
-from nlib.sender import SendMessage
-
-from .utils.add_author import add_author
-from .utils.check_message_min_length import check_message_length
 
 SEND_MESSAGE_MAP = {
     "text": SendMessage.send_message,
@@ -67,10 +66,12 @@ async def process_edited_message(
     file_id: str = None,
     **_
 ) -> int:
+    print("===========================WithHashtag")
     result: dict = await ForwardedMessage.get_message(
         from_message_id=message.message_id,
         from_chat_id=message.chat.id,
     )
+    print("==========result1", result)
     if not result:
         await process_new_message(
             message=message,
@@ -87,6 +88,7 @@ async def process_edited_message(
     need_edit = await check_message_length(
         from_chat_id=message.chat.id, message_text=message_text
     )
+    print("===================need_edit", need_edit)
     # if length after edited message less than GLOBAL_VARS - need to delete message from channel
     if not need_edit:
         await process_delete_message(message=message)
@@ -104,9 +106,12 @@ async def process_edited_message(
         "photo": file_id,
         "document": file_id,
     }
+    print("==========to_chat_id", to_chat_id)
+    print("==========result_to_chat_id", result["to_chat_id"])
     if is_message_deleted:
         result: types.Message = await SEND_MESSAGE_MAP[model_type](**params)
     elif to_chat_id != result["to_chat_id"]:
+        print("================")
         await process_delete_message(message=message)
         result: types.Message = await SEND_MESSAGE_MAP[model_type](**params)
     else:

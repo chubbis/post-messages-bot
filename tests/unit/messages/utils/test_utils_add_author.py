@@ -1,4 +1,4 @@
-from handlers.messages.utils.add_author import add_author
+from bot_v3.handlers.messages.utils import add_author
 
 
 def test_add_author_true():

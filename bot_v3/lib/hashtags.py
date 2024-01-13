@@ -2,25 +2,25 @@ import asyncio
 import logging
 
 from aiogram import types
-from aiogram.dispatcher.filters import HashTag
-from aiogram.dispatcher.handler import CancelHandler
+from aiogram.filters import Filter
 
 from models.hashtags.models import Hashtags
 
 logger = logging.getLogger(__name__)
 
 
-class HashTagService(HashTag):
+class HashTagService(Filter):
     from_chat_id_hashtags: dict[dict[int:str]] | dict = None
     message_hashtags: list[str]
+    hashtags: list[str]
 
     def __init__(self):
         loop = asyncio.get_event_loop()
         loop.run_until_complete(self._set_hashtags())
-        hashtags = self._prepare_hashtags_list()
-        super().__init__(hashtags=hashtags, cashtags=[])
+        self.hashtags = self._prepare_hashtags_list()
+        super().__init__()
 
-    async def check(self, message: types.Message):
+    async def __call__(self, message: types.Message):
         if message.caption:
             text = message.caption
             entities = message.caption_entities
@@ -37,13 +37,17 @@ class HashTagService(HashTag):
 
     def _get_tags(self, text, entities) -> list[str]:
         hashtags = []
-
+        if entities is None:
+            entities = []
         for entity in entities:
-            if entity.type == types.MessageEntityType.HASHTAG:
-                value: str = entity.get_text(text).lstrip("#").lower()
-                hashtags.append(value)
+            if entity.type == "hashtag":
+                hashtags.append(self.__get_text(text, entity))
 
         return hashtags
+
+    @staticmethod
+    def __get_text(text: str, entity) -> str:
+        return text[entity.offset : (entity.offset + entity.length)].lstrip("#").lower()
 
     async def _set_hashtags(self):
         self.from_chat_id_hashtags = await Hashtags.get_hashtags()
@@ -75,7 +79,6 @@ class HashTagService(HashTag):
             from_chat_id,
             group_ids,
         )
-        raise CancelHandler
 
 
 hashtags_service = HashTagService()
