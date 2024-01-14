@@ -70,5 +70,7 @@ class SerializeMessageMiddleware(BaseMiddleware):
 
     @staticmethod
     def __get_entities(message: "Message", model_type: str) -> str:
-        entities = getattr(message, EntitiesPath[model_type].value, "")
+        entities = getattr(message, EntitiesPath[model_type].value)
+        if not entities:
+            return ""
         return json.dumps([dict(entity) for entity in entities])
