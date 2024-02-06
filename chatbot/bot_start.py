@@ -1,8 +1,8 @@
 from aiogram import Dispatcher
 
-from bot_v3.handlers.messages.handlers import messages_router
-from bot_v3.lib.bot import bot
-from bot_v3.middlewares.serialize_message import SerializeMessageMiddleware
+from chatbot.handlers.messages.handlers import messages_router
+from chatbot.lib.bot import bot
+from chatbot.middlewares.serialize_message import SerializeMessageMiddleware
 
 dp = Dispatcher()
 

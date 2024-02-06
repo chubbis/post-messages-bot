@@ -1,8 +1,8 @@
 from aiogram import types
 
-from bot_v3.handlers.messages.utils.add_author import add_author
-from bot_v3.handlers.messages.utils.check_message_min_length import check_message_length
-from bot_v3.sender import SendMessage
+from chatbot.handlers.messages.utils.add_author import add_author
+from chatbot.handlers.messages.utils.check_message_min_length import check_message_length
+from chatbot.sender import SendMessage
 from models.messages.models import ForwardedMessage
 
 SEND_MESSAGE_MAP = {
