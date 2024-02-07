@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 
 from aiogram import types
@@ -16,8 +17,8 @@ class HashTagService(Filter):
 
     def __init__(self):
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(self._set_hashtags())
-        self.hashtags = self._prepare_hashtags_list()
+        loop.create_task(self._initialize())
+        loop.create_task(self.refresh_hashtags_periodic())
         super().__init__()
 
     async def __call__(self, message: types.Message):
@@ -49,8 +50,20 @@ class HashTagService(Filter):
     def __get_text(text: str, entity) -> str:
         return text[entity.offset : (entity.offset + entity.length)].lstrip("#").lower()
 
+    async def refresh_hashtags_periodic(self, period_sec: int = 10) -> None:
+        while True:
+            await self._initialize()
+            await asyncio.sleep(period_sec)
+
+    async def _initialize(self):
+        await self._set_hashtags()
+        self.hashtags = self._prepare_hashtags_list()
+
     async def _set_hashtags(self):
-        self.from_chat_id_hashtags = await Hashtags.get_hashtags()
+        result = await Hashtags.get_hashtags()
+        self.from_chat_id_hashtags = {
+            r["from_chat_id"]: json.loads(r["hashtag_info"]) for r in result
+        }
 
     def _prepare_hashtags_list(self) -> list[str]:
         return list(

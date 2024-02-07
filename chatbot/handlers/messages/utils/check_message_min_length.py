@@ -1,4 +1,4 @@
-from models.chat_settings.models import ChatSettings
+from models.chats.models import ChatSettings
 
 
 async def check_message_length(from_chat_id: int, message_text: str) -> bool:

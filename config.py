@@ -34,6 +34,11 @@ class EnvironmentInfo:
     DEBUG: bool = os.environ.get("DEBUG", False)
 
 
+class ChatBotGetApi:
+    APP_HOST: str = os.environ.get("APP_HOST", "localhost")
+    APP_PORT: str = os.environ.get("APP_PORT", 8000)
+
+
 class Config(
     DatabaseMixin,
     GetApiTokenBot,

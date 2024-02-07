@@ -1,3 +1,5 @@
+import asyncio
+
 from aiogram import Dispatcher
 
 from chatbot.handlers.messages.handlers import messages_router
@@ -15,5 +17,5 @@ messages_router.edited_message.middleware(SerializeMessageMiddleware())
 dp.include_routers(messages_router)
 
 
-async def start_chatbot():
-    await dp.start_polling(bot)
+async def start_chatbot(loop=None):
+    await dp.start_polling(bot, loop=loop)

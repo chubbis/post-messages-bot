@@ -13,6 +13,9 @@ async def test_save_new_message():
         to_chat_message_id=pytest.to_chat_message_id_1,
         is_private=False,
         model_type="text",
+        message_text="super important text",
+        file_id=None,
+        entities="",
     )
     assert result == 33333
 
