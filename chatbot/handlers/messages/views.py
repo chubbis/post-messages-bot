@@ -1,8 +1,13 @@
+import asyncio
+
 from aiogram import types
 
-from bot_v3.handlers.messages.utils.add_author import add_author
-from bot_v3.handlers.messages.utils.check_message_min_length import check_message_length
-from bot_v3.sender import SendMessage
+from chatbot.handlers.messages.utils.add_author import add_author
+from chatbot.handlers.messages.utils.check_message_min_length import (
+    check_message_length,
+)
+from chatbot.handlers.messages.utils.save_message import prepare_save_message_coros
+from chatbot.lib.sender import SendMessage
 from models.messages.models import ForwardedMessage
 
 SEND_MESSAGE_MAP = {
@@ -47,8 +52,7 @@ async def process_new_message(
         return 1
 
     is_private = message.chat.type == "private"
-
-    await ForwardedMessage.save_message(
+    coros = prepare_save_message_coros(
         from_chat_id=message.chat.id,
         from_user=message.from_user.id,
         from_message_id=message.message_id,
@@ -59,7 +63,9 @@ async def process_new_message(
         entities=entities,
         file_id=file_id,
         message_text=message_text,
+        username=message.from_user.username,
     )
+    await asyncio.gather(*coros)
 
 
 async def process_edited_message(
@@ -122,18 +128,21 @@ async def process_edited_message(
     if not result:
         return 1
 
-    await ForwardedMessage.save_message(
+    coros = prepare_save_message_coros(
         from_chat_id=message.chat.id,
         from_user=message.from_user.id,
         from_message_id=message.message_id,
         to_chat_id=to_chat_id,
+        is_private=is_private,
         to_chat_message_id=result.message_id,
         model_type=model_type,
-        is_private=is_private,
-        message_text=message_text,
         entities=entities,
         file_id=file_id,
+        message_text=message_text,
+        username=message.from_user.username,
     )
+
+    await asyncio.gather(*coros)
 
 
 async def process_delete_message(message: types.Message):

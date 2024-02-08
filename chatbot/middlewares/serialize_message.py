@@ -1,31 +1,14 @@
 import json
 import typing
-from enum import Enum
 from typing import Any, Awaitable, Callable, Dict
 
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
 
+from common.enums import EntitiesPath, ModelTypeEnum, TextPath
+
 if typing.TYPE_CHECKING:
     from aiogram.types import Message
-
-
-class ModelTypeEnum(Enum):
-    text_message = "text"
-    photo_message = "photo"
-    document_message = "document"
-
-
-class TextPath(Enum):
-    text = "text"
-    photo = "caption"
-    document = "caption"
-
-
-class EntitiesPath(Enum):
-    text = "entities"
-    photo = "caption_entities"
-    document = "caption_entities"
 
 
 class SerializeMessageMiddleware(BaseMiddleware):

@@ -1,8 +1,8 @@
 from aiogram import Dispatcher
 
-from bot_v3.handlers.messages.handlers import messages_router
-from bot_v3.lib.bot import bot
-from bot_v3.middlewares.serialize_message import SerializeMessageMiddleware
+from chatbot.handlers.messages.handlers import messages_router
+from chatbot.middlewares.serialize_message import SerializeMessageMiddleware
+from common.lib.bot import bot
 
 dp = Dispatcher()
 
@@ -15,5 +15,5 @@ messages_router.edited_message.middleware(SerializeMessageMiddleware())
 dp.include_routers(messages_router)
 
 
-async def start_chatbot():
-    await dp.start_polling(bot)
+async def start_chatbot(loop=None):
+    await dp.start_polling(bot, loop=loop)

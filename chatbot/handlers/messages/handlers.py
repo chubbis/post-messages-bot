@@ -1,12 +1,12 @@
 from aiogram import F, Router, types
 from aiogram.enums import ChatType
 
-from bot_v3.handlers.messages.views import (
+from chatbot.handlers.messages.views import (
     process_delete_message,
     process_edited_message,
     process_new_message,
 )
-from bot_v3.lib.hashtags import hashtags_service
+from chatbot.lib.hashtags import hashtags_service
 
 messages_router = Router()
 

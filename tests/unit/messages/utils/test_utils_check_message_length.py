@@ -1,6 +1,8 @@
 import pytest
 
-from bot_v3.handlers.messages.utils.check_message_min_length import check_message_length
+from chatbot.handlers.messages.utils.check_message_min_length import (
+    check_message_length,
+)
 
 
 @pytest.mark.asyncio
