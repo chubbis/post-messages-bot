@@ -176,15 +176,19 @@ class ForwardedMessage(Base):
     @classmethod
     async def get_messages(
             cls,
-            from_chat_ids: list = None,
-            to_chat_ids: list = None,
+            from_chat_ids: list[int] = None,
+            from_chat_usernames: list[str] = None,
+            to_chat_ids: list[int] = None,
+            to_chat_usernames: list[str] = None,
             from_user_ids: list = None,
+            from_user_usernames: list[str] = None,
             order_by: str = "",
             order_type_desc: bool = False,
             fields: list[str] = None,
             limit: int = 0,
             offset: int = 0,
             only_count: bool = False,
+            has_text: bool = True,
     ) -> list:
         if only_count:
             fields = "count(*)"
@@ -199,12 +203,17 @@ class ForwardedMessage(Base):
             fields=fields,
             table_name=cls.__tablename__,
             from_chat_ids=from_chat_ids,
+            from_chat_usernames=from_chat_usernames,
             to_chat_ids=to_chat_ids,
+            to_chat_usernames=to_chat_usernames,
             from_user_ids=from_user_ids,
+            from_user_usernames=from_user_usernames,
             order_by=order_by,
             order_type_desc=order_type_desc,
             limit=limit,
             offset=offset,
+            only_count=only_count,
+            has_text=has_text,
         )
         try:
             async with await adb_session() as conn:
@@ -248,53 +257,74 @@ class ForwardedMessage(Base):
             cls,
             table_name,
             fields: str,
-            from_chat_ids: list = None,
-            to_chat_ids: list = None,
+            from_chat_ids: list[int] = None,
+            from_chat_usernames: list[str] = None,
+            to_chat_ids: list[int] = None,
+            to_chat_usernames: list[str] = None,
             from_user_ids: list = None,
+            from_user_usernames: list[str] = None,
             order_by: str = "",
             order_type_desc: bool = False,
             limit: int = 0,
             offset: int = 0,
+            only_count: bool = False,
+            has_text: bool = True,
     ) -> tuple[str, list]:
-        query = f"""
-            SELECT 
-                {fields},
+        select_part = f"SELECT {fields}"
+        if not only_count:
+            select_part = (
+                    select_part
+                    + ","
+                    + f"""
                 JSON_BUILD_OBJECT(
                     'title', from_chat.title, 
                     'username', from_chat.username, 
-                    'chat_id', {table_name}.from_chat_id
+                    'id', {table_name}.from_chat_id
                     ) AS from_chat,
                 JSON_BUILD_OBJECT(
                     'title', to_chat.title,
                     'username', to_chat.username,
-                    'chat_id', {table_name}.to_chat_id
+                    'id', {table_name}.to_chat_id
                     ) AS to_chat,
                 JSON_BUILD_OBJECT(
-                    'username', u.username,
+                    'username', {Users.__tablename__}.username,
                     'id', {table_name}.from_user
                     ) AS from_user_info
+            """
+            )
+
+        query = f"""
+            {select_part}
             FROM {table_name}
             LEFT JOIN
                 {Chat.__tablename__} AS from_chat ON {table_name}.from_chat_id = from_chat.id
             LEFT JOIN
                 {Chat.__tablename__} AS to_chat ON {table_name}.to_chat_id = to_chat.id
             LEFT JOIN
-                {Users.__tablename__} AS u ON {table_name}.from_user = u.id
+                {Users.__tablename__} AS {Users.__tablename__} ON {table_name}.from_user = {Users.__tablename__}.id
         """
         conditions_str, params = cls._prepare_conditions_string_and_params(
-            from_chat_ids, to_chat_ids, from_user_ids
+            chats_table_name=Chat.__tablename__,
+            users_table_name=Users.__tablename__,
+            from_chat_ids=from_chat_ids,
+            from_chat_usernames=from_chat_usernames,
+            to_chat_ids=to_chat_ids,
+            to_chat_usernames=to_chat_usernames,
+            from_user_ids=from_user_ids,
+            from_user_usernames=from_user_usernames,
+            has_text=has_text,
         )
 
         if conditions_str:
             query += f" WHERE {conditions_str}"
 
-        if order_by:
-            sanitized_order_by = cls._sanitize_user_input_columns(order_by)
+        if order_by and not only_count:
+            sanitized_order_by = cls._sanitize_user_input_columns(order_by, "")
             if sanitized_order_by:
                 query += f" ORDER BY {sanitized_order_by} {'DESC' if order_type_desc else 'ASC'}"
 
         if limit:
-            query += f" LIMIT {limit}"
+            query += f" LIMIT {limit + 1}"
         if offset:
             query += f" OFFSET {offset}"
 
@@ -305,6 +335,15 @@ class ForwardedMessage(Base):
             input_columns: list[str] | str | None, default_value: str = "*"
     ) -> str:
         allowed_columns = [column.name for column in ForwardedMessage.__table__.columns]
+        for column in ForwardedMessage.__table__.columns:
+            allowed_columns.append(column.name)
+            allowed_columns.append(f"{ForwardedMessage.__tablename__}.{column.name}")
+        for column in Chat.__table__.columns:
+            allowed_columns.append(column.name)
+            allowed_columns.append(f"{Chat.__tablename__}.{column.name}")
+        for column in Users.__table__.columns:
+            allowed_columns.append(column.name)
+            allowed_columns.append(f"{Users.__tablename__}.{column.name}")
         if input_columns is None:
             input_columns = []
         if isinstance(input_columns, str):
@@ -318,27 +357,40 @@ class ForwardedMessage(Base):
 
     @staticmethod
     def _prepare_conditions_string_and_params(
-            from_chat_ids: list[int] | int = None,
-            to_chat_ids: list[int] | int = None,
-            from_user_ids: list[int] | int = None,
+            users_table_name: str,
+            chats_table_name: str,
+            from_chat_ids: list[int] = None,
+            from_chat_usernames: list[str] = None,
+            to_chat_ids: list[int] = None,
+            to_chat_usernames: list[str] = None,
+            from_user_ids: list[int] = None,
+            from_user_usernames: list[str] = None,
+            has_text: bool = True,
     ) -> tuple[str, list]:
         conditions = []
         params = []
         if from_chat_ids:
-            if isinstance(from_chat_ids, int):
-                from_chat_ids = [from_chat_ids]
             params.append(from_chat_ids)
             conditions.append(f"from_chat_id = ANY(${len(params)})")
+        if from_chat_usernames:
+            params.append(from_chat_usernames)
+            conditions.append(f"{chats_table_name}.username = ANY(${len(params)})")
         if to_chat_ids:
-            if isinstance(to_chat_ids, int):
-                to_chat_ids = [from_chat_ids]
             params.append(to_chat_ids)
             conditions.append(f"to_chat_id = ANY(${len(params)})")
+        if to_chat_usernames:
+            params.append(to_chat_usernames)
+            conditions.append(f"{chats_table_name}.username = ANY(${len(params)})")
         if from_user_ids:
-            if isinstance(from_user_ids, int):
-                from_user_ids = [from_user_ids]
             params.append(from_user_ids)
             conditions.append(f"from_user = ANY(${len(params)})")
+        if from_user_usernames:
+            params.append(from_user_usernames)
+            conditions.append(f"{users_table_name}.username = ANY(${len(params)})")
+        if has_text:
+            conditions.append(
+                f"{ForwardedMessage.__tablename__}.message_text IS NOT NULL"
+            )
 
         conditions_str = " AND ".join(conditions) if conditions else ""
 

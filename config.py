@@ -34,15 +34,19 @@ class EnvironmentInfo:
     DEBUG: bool = os.environ.get("DEBUG", False)
 
 
-class ChatBotGetApi:
+class ChatBotAdminApi:
     APP_HOST: str = os.environ.get("APP_HOST", "localhost")
     APP_PORT: str = os.environ.get("APP_PORT", 8000)
+    FERNET_NEXT_PAGE: str = os.environ.get(
+        "FERNET_NEXT_PAGE", "lZ8sCaqR7sNi4Wt7H4wFIePV-gCfDAYGCmN8GSA1NDQ="
+    )
 
 
 class Config(
     DatabaseMixin,
     GetApiTokenBot,
     EnvironmentInfo,
+    ChatBotAdminApi,
 ):
     pass
 

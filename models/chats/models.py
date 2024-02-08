@@ -38,7 +38,7 @@ class Chat(Base):
         """
 
         async with await adb_session() as conn:
-            result = await conn.fetch(query, chat_id)
+            result = await conn.fetchrow(query, chat_id)
 
         return result
 
@@ -62,6 +62,30 @@ class Chat(Base):
             result = await conn.fetch(query, chat_id, chat_type, title, username)
 
         return result
+
+    @classmethod
+    async def get_chats(cls, limit: int, offset: int, only_count: bool = False):
+        fields = "count(*)" if only_count else "*"
+        params = []
+        query = f"""
+            SELECT {fields} FROM {cls.__tablename__}
+        """
+        if not only_count:
+            query += "LIMIT $1 OFFSET $2"
+            params.append(limit + 1)
+            params.append(offset)
+
+        async with await adb_session() as conn:
+            result = await conn.fetch(query, *params)
+
+        return result
+
+    @classmethod
+    async def get_chats_count(cls):
+        query = f"SELECT count(*) FROM {cls.__tablename__}"
+        async with await adb_session() as conn:
+            result = await conn.fetchval(query)
+            return result
 
 
 class ChatSettings(Base):

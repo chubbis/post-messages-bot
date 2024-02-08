@@ -14,16 +14,22 @@ logger = logging.getLogger(__name__)
 
 class ServicesEnum(Enum):
     chatbot = "chatbot"
-    apigateway = "apigateway"
+    cb_admin = "cb_admin"
 
 
 def run_service(service: str):
     loop = asyncio.get_event_loop()
+    asyncio.set_event_loop(loop)
     match service:
         case ServicesEnum.chatbot.value:
-            from bot_v3.bot_start import start_chatbot
+            from chatbot.bot_start import start_chatbot
 
             loop.run_until_complete(start_chatbot())
+        case ServicesEnum.cb_admin.value:
+            from cb_admin.server import CBAdminServer
+
+            cb_admin_server = CBAdminServer(port=8208, debug=True)
+            loop.run_until_complete(cb_admin_server())
         case _:
             logger.error("No such service: %s", service_name)
             sys.exit(2)
