@@ -13,3 +13,8 @@ class ChatBase(BaseModel):
         if data["username"]:
             data["link"] = f"https://t.me/{data['username']}"
         return data
+
+
+class UserBase(BaseModel):
+    id: int | None
+    username: str | None = None

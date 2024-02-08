@@ -1,18 +1,22 @@
 import asyncio
 
 from aiogram.exceptions import TelegramBadRequest
-from fastapi import HTTPException, Request, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.params import Query
 from fastapi.responses import StreamingResponse
 
+from cb_admin.common.dependencies import check_app_key
 from cb_admin.messages.schemas import MessageBase, MessagesNextPageQuery, MessagesOutput
 from cb_admin.messages.serializes import serialize_messages
-from common.lib.bot import bot
 from common.enums import AvailableFilesModelType, ModelTypeExtensions
+from common.lib.bot import bot
 from models.messages.models import ForwardedMessage
 
 
-async def get_message(message_id: int) -> MessageBase:
+async def get_message(
+        message_id: int,
+        _: dict = Depends(check_app_key),
+) -> MessageBase:
     message = await ForwardedMessage.get_message_by_id(message_id=message_id)
     return MessageBase(**message)
 
@@ -46,6 +50,7 @@ async def get_messages(
         ),
         order_type_desc: bool = Query(False, description="Sorting direction"),
         limit: int = Query(10, ge=1, le=20, description="Records limit"),
+        _: dict = Depends(check_app_key),
 ) -> MessagesOutput:
     if next_page:
         query_obj = MessagesNextPageQuery.from_str(next_page)
@@ -83,6 +88,7 @@ async def get_messages(
 async def download_file(
         file_id: str,
         model_type: AvailableFilesModelType,
+        _: dict = Depends(check_app_key),
 ) -> StreamingResponse:
     try:
         file = await bot.get_file(file_id=file_id)

@@ -2,20 +2,20 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from cb_admin.common.base_schemas import ChatBase
+from common.base_schemas import ChatBase, UserBase
 from common.pagination import BasePageQuery
 
 
-class UserBase(BaseModel):
+class UserOutput(UserBase):
     id: int | None
-    link: str | None = None
     username: str | None = None
+    link: str | None = None
 
 
 class MessageBase(BaseModel):
     id: int
     from_chat: ChatBase | None = None
-    from_user_info: UserBase | None = None
+    from_user_info: UserOutput | None = None
     to_chat: ChatBase | None = None
     message_text: str | None = None
     file_link: str | None = None

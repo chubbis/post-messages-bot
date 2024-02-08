@@ -48,7 +48,9 @@ class CBAdminServer:
         self._add_routes()
 
     async def _start_server(self):
-        config = uvicorn.Config(self.app, port=self.port, log_level=self.log_level, reload=self.reload)
+        config = uvicorn.Config(
+            self.app, port=self.port, log_level=self.log_level, reload=self.reload
+        )
         server = uvicorn.Server(config)
         await server.serve()
 

@@ -18,7 +18,7 @@ from models.hashtags.models import Hashtags
 from models.messages.models import ForwardedMessage
 from models.chats.models import Chat
 from models.chats.models import ChatSettings
-from models.users.models import Users
+from models.users.models import Users, UserToken
 
 # add your model's MetaData object here
 # for 'autogenerate' support

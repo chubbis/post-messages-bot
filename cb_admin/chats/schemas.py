@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from cb_admin.common.base_schemas import ChatBase
+from common.base_schemas import ChatBase
 from common.pagination import BasePageQuery
 
 
