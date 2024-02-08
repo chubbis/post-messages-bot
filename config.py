@@ -34,10 +34,24 @@ class EnvironmentInfo:
     DEBUG: bool = os.environ.get("DEBUG", False)
 
 
+class ChatBotAdminApi:
+    APP_HOST: str = os.environ.get("APP_HOST", "localhost")
+    APP_PORT: str = os.environ.get("APP_PORT", 8000)
+    FERNET_NEXT_PAGE: str = os.environ.get(
+        "FERNET_NEXT_PAGE", "lZ8sCaqR7sNi4Wt7H4wFIePV-gCfDAYGCmN8GSA1NDQ="
+    )
+    JWT_TOKEN_ACCESS_KEY: str = os.environ.get(
+        "JWT_TOKEN_ACCESS_KEY",
+        "fc3765d2f2743a6337de309901d7d61c90dbab7812b9a18d532aeaf88202a7e7",
+    )
+    JWT_TOKEN_ALGORITHM: str = os.environ.get("JWT_TOKEN_ALGORITHM", "HS256")
+
+
 class Config(
     DatabaseMixin,
     GetApiTokenBot,
     EnvironmentInfo,
+    ChatBotAdminApi,
 ):
     pass
 

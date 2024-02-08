@@ -16,7 +16,9 @@ fileConfig(config.config_file_name)
 from storages.pg_sync import Base
 from models.hashtags.models import Hashtags
 from models.messages.models import ForwardedMessage
-from models.chat_settings.models import ChatSettings
+from models.chats.models import Chat
+from models.chats.models import ChatSettings
+from models.users.models import Users, UserToken
 
 # add your model's MetaData object here
 # for 'autogenerate' support

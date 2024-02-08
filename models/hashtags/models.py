@@ -1,5 +1,5 @@
-import json
 import logging
+from typing import TYPE_CHECKING
 
 from asyncpg import PostgresError
 from sqlalchemy import (
@@ -14,6 +14,9 @@ from sqlalchemy import (
 
 from storages.pg import adb_session
 from storages.pg_sync import Base
+
+if TYPE_CHECKING:
+    from asyncpg import Record
 
 
 class Hashtags(Base):
@@ -58,8 +61,8 @@ class Hashtags(Base):
         :param hashtag_name: str Hashtag name
         :return:
         """
-        query = """
-            INSERT INTO hashtag
+        query = f"""
+            INSERT INTO {cls.__tablename__}
                 (
                     from_chat_id, 
                     to_chat_id, 
@@ -69,7 +72,7 @@ class Hashtags(Base):
             ON CONFLICT ON CONSTRAINT unq_hashtags_from_chat_id_to_chat_id_hashtag_name 
             DO UPDATE
             SET
-                to_chat_id $2
+                to_chat_id = $2
             RETURNING id
         """
         try:
@@ -86,34 +89,32 @@ class Hashtags(Base):
             return 0
 
     @classmethod
-    async def get_hashtags(cls) -> dict:
-        query = """
+    async def get_hashtags(cls) -> list["Record"]:
+        query = f"""
             SELECT
                 from_chat_id,
                 jsonb_object_agg(hashtag_name, to_chat_id) AS hashtag_info
             FROM
-                hashtag
+                {cls.__tablename__}
             GROUP BY
-                from_chat_id;;
+                from_chat_id;
         """
         try:
             async with await adb_session() as conn:
-                result = await conn.fetch(query)
-            if not result:
-                return dict()
-            return {r["from_chat_id"]: json.loads(r["hashtag_info"]) for r in result}
+                result: list["Record"] = await conn.fetch(query)
+            return result
         except PostgresError as e:
             logging.error("Error Save hashtag: %s", e)
-            return dict()
+            return []
 
     @classmethod
     async def get_to_chat_id(cls, from_chat_id: int, hashtag_name: str) -> int:
-        query = """
+        query = f"""
             SELECT to_chat_id
-            FROM hashtag
+            FROM {cls.__tablename__}
             WHERE 
-                from_chat_id = $1,
-                hashtag_name = $2
+                from_chat_id = $1
+                AND hashtag_name = $2
         """
         try:
             async with await adb_session() as conn:
@@ -129,8 +130,8 @@ class Hashtags(Base):
 
     @classmethod
     async def delete_hashtag(cls, from_chat_id: int, hashtag: int):
-        query = """
-            DELETE FROM hashtag 
+        query = f"""
+            DELETE FROM {cls.__tablename__}
             WHERE from_chat_id = $1
                 AND hashtag_name = $2
             RETURNING id
