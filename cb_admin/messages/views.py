@@ -7,7 +7,7 @@ from fastapi.responses import StreamingResponse
 
 from cb_admin.messages.schemas import MessageBase, MessagesNextPageQuery, MessagesOutput
 from cb_admin.messages.serializes import serialize_messages
-from chatbot.lib.bot import bot
+from common.lib.bot import bot
 from common.enums import AvailableFilesModelType, ModelTypeExtensions
 from models.messages.models import ForwardedMessage
 

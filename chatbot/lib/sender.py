@@ -1,6 +1,6 @@
 from aiogram import types
 
-from chatbot.lib.bot import bot
+from common.lib.bot import bot
 
 
 class SendMessage:

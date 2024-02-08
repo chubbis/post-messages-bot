@@ -1,9 +1,7 @@
-import asyncio
-
 from aiogram import Dispatcher
 
 from chatbot.handlers.messages.handlers import messages_router
-from chatbot.lib.bot import bot
+from common.lib.bot import bot
 from chatbot.middlewares.serialize_message import SerializeMessageMiddleware
 
 dp = Dispatcher()
