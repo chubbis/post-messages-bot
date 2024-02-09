@@ -23,7 +23,7 @@ def upgrade():
     """)
     op.execute("""
         UPDATE forwarded_messages
-        SET file_ids = array_append(file_ids, file_id)
+        SET file_ids = array_append(file_ids::text[], file_id::text)
         WHERE file_id IS NOT NULL;
     """)
     op.drop_column('forwarded_messages', 'file_id')
