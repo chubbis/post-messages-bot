@@ -1,8 +1,8 @@
 import logging
-from typing import Optional
 
 from asyncpg import PostgresError
 from sqlalchemy import (
+    ARRAY,
     JSON,
     BigInteger,
     Boolean,
@@ -34,7 +34,8 @@ class ForwardedMessage(Base):
 
     model_type = Column(String, nullable=False)
     message_text = Column(String)
-    file_id = Column(String)
+
+    file_ids = Column(ARRAY(String))
     entities = Column(JSON)
 
     is_private = Column(Boolean)
@@ -65,7 +66,7 @@ class ForwardedMessage(Base):
         is_private: bool,
         model_type: str,
         message_text: str,
-        file_id: str | None,
+        file_ids: list[str] | None,
         entities: str,
     ) -> int:
         """
@@ -78,7 +79,7 @@ class ForwardedMessage(Base):
         :param from_message_id: message id from chat, where message was sent
         :param model_type: str message model type
         :param message_text: str message text or caption
-        :param file_id: str file id from message
+        :param file_ids: list[str] if media_group there are few file ids else only one
         :param entities: str JSON hashtags position in text
         :return:
         """
@@ -95,7 +96,7 @@ class ForwardedMessage(Base):
                     is_deleted,
                     model_type,
                     message_text,
-                    file_id,
+                    file_ids,
                     entities
                 )
             VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP, FALSE, $7, $8, $9, $10)
@@ -106,7 +107,7 @@ class ForwardedMessage(Base):
                 to_chat_id = $3,
                 to_chat_message_id = $5,
                 message_text = $8,
-                file_id = $9,
+                file_ids = $9,
                 entities = $10
             RETURNING to_chat_message_id
         """
@@ -122,7 +123,7 @@ class ForwardedMessage(Base):
                     is_private,
                     model_type,
                     message_text,
-                    file_id,
+                    file_ids,
                     entities,
                 )
             return result["to_chat_message_id"]
@@ -133,7 +134,7 @@ class ForwardedMessage(Base):
     @classmethod
     async def get_message(cls, from_message_id: int, from_chat_id: int) -> dict:
         query = f"""
-            SELECT to_chat_message_id, is_deleted, to_chat_id
+            SELECT to_chat_message_id, is_deleted, to_chat_id, file_ids
             FROM {cls.__tablename__}
             WHERE from_message_id = $1
                 AND from_chat_id = $2
@@ -175,20 +176,20 @@ class ForwardedMessage(Base):
 
     @classmethod
     async def get_messages(
-            cls,
-            from_chat_ids: list[int] = None,
-            from_chat_usernames: list[str] = None,
-            to_chat_ids: list[int] = None,
-            to_chat_usernames: list[str] = None,
-            from_user_ids: list = None,
-            from_user_usernames: list[str] = None,
-            order_by: str = "",
-            order_type_desc: bool = False,
-            fields: list[str] = None,
-            limit: int = 0,
-            offset: int = 0,
-            only_count: bool = False,
-            has_text: bool = True,
+        cls,
+        from_chat_ids: list[int] = None,
+        from_chat_usernames: list[str] = None,
+        to_chat_ids: list[int] = None,
+        to_chat_usernames: list[str] = None,
+        from_user_ids: list = None,
+        from_user_usernames: list[str] = None,
+        order_by: str = "",
+        order_type_desc: bool = False,
+        fields: list[str] = None,
+        limit: int = 0,
+        offset: int = 0,
+        only_count: bool = False,
+        has_text: bool = True,
     ) -> list:
         if only_count:
             fields = "count(*)"
@@ -254,28 +255,28 @@ class ForwardedMessage(Base):
 
     @classmethod
     def _prepare_query_conditions(
-            cls,
-            table_name,
-            fields: str,
-            from_chat_ids: list[int] = None,
-            from_chat_usernames: list[str] = None,
-            to_chat_ids: list[int] = None,
-            to_chat_usernames: list[str] = None,
-            from_user_ids: list = None,
-            from_user_usernames: list[str] = None,
-            order_by: str = "",
-            order_type_desc: bool = False,
-            limit: int = 0,
-            offset: int = 0,
-            only_count: bool = False,
-            has_text: bool = True,
+        cls,
+        table_name,
+        fields: str,
+        from_chat_ids: list[int] = None,
+        from_chat_usernames: list[str] = None,
+        to_chat_ids: list[int] = None,
+        to_chat_usernames: list[str] = None,
+        from_user_ids: list = None,
+        from_user_usernames: list[str] = None,
+        order_by: str = "",
+        order_type_desc: bool = False,
+        limit: int = 0,
+        offset: int = 0,
+        only_count: bool = False,
+        has_text: bool = True,
     ) -> tuple[str, list]:
         select_part = f"SELECT {fields}"
         if not only_count:
             select_part = (
-                    select_part
-                    + ","
-                    + f"""
+                select_part
+                + ","
+                + f"""
                 JSON_BUILD_OBJECT(
                     'title', from_chat.title, 
                     'username', from_chat.username, 
@@ -332,7 +333,7 @@ class ForwardedMessage(Base):
 
     @staticmethod
     def _sanitize_user_input_columns(
-            input_columns: list[str] | str | None, default_value: str = "*"
+        input_columns: list[str] | str | None, default_value: str = "*"
     ) -> str:
         allowed_columns = [column.name for column in ForwardedMessage.__table__.columns]
         for column in ForwardedMessage.__table__.columns:
@@ -357,15 +358,15 @@ class ForwardedMessage(Base):
 
     @staticmethod
     def _prepare_conditions_string_and_params(
-            users_table_name: str,
-            chats_table_name: str,
-            from_chat_ids: list[int] = None,
-            from_chat_usernames: list[str] = None,
-            to_chat_ids: list[int] = None,
-            to_chat_usernames: list[str] = None,
-            from_user_ids: list[int] = None,
-            from_user_usernames: list[str] = None,
-            has_text: bool = True,
+        users_table_name: str,
+        chats_table_name: str,
+        from_chat_ids: list[int] = None,
+        from_chat_usernames: list[str] = None,
+        to_chat_ids: list[int] = None,
+        to_chat_usernames: list[str] = None,
+        from_user_ids: list[int] = None,
+        from_user_usernames: list[str] = None,
+        has_text: bool = True,
     ) -> tuple[str, list]:
         conditions = []
         params = []

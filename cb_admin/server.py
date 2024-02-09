@@ -25,14 +25,14 @@ class CBAdminServer:
     )
 
     def __init__(
-            self,
-            host: str = "0.0.0.0",
-            port: int = 8000,
-            log_level: str = "info",
-            reload: bool = True,
-            workers: int = 1,
-            debug: bool = False,
-            loop=None,
+        self,
+        host: str = "0.0.0.0",
+        port: int = 8000,
+        log_level: str = "info",
+        reload: bool = True,
+        workers: int = 1,
+        debug: bool = False,
+        loop=None,
     ):
         self.host = host
         self.port = port

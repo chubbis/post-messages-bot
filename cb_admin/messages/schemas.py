@@ -18,7 +18,7 @@ class MessageBase(BaseModel):
     from_user_info: UserOutput | None = None
     to_chat: ChatBase | None = None
     message_text: str | None = None
-    file_link: str | None = None
+    file_links: list[str] | None = None
     entities: list[dict] | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None

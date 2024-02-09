@@ -1,4 +1,5 @@
 from aiogram import types
+from aiogram.utils.media_group import MediaGroupBuilder
 
 from common.lib.bot import bot
 
@@ -84,6 +85,29 @@ class SendMessage:
         return result
 
     @classmethod
+    async def send_media_group(
+        cls,
+        chat_id: int,
+        text: str,
+        caption_entities: list,
+        photo: list[str],
+        disable_notification: bool = False,
+        *_,
+        **__
+    ):
+        media_group = MediaGroupBuilder(caption=text, caption_entities=caption_entities)
+        for file_id in photo:
+            media_group.add_photo(media=file_id)
+
+        result = await bot.send_media_group(
+            chat_id=chat_id,
+            media=media_group.build(),
+            disable_notification=disable_notification,
+        )
+
+        return result[0] if result else None
+
+    @classmethod
     async def edit_sent_text_message(
         cls, message_id: int, text: str, chat_id: int, entities: list, *_, **__
     ):
@@ -110,7 +134,9 @@ class SendMessage:
         return result
 
     @classmethod
-    async def delete_message(cls, message_id: int, chat_id: int):
-        result = await bot.delete_message(chat_id=chat_id, message_id=message_id)
-
-        return result
+    async def delete_message(
+        cls, message_id: int, chat_id: int, messages_to_delete_count: int = 1
+    ):
+        for i in range(messages_to_delete_count):
+            m_id = message_id + i
+            await bot.delete_message(chat_id=chat_id, message_id=m_id)
