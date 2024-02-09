@@ -19,7 +19,7 @@ depends_on = None
 def upgrade():
     op.execute("""
         ALTER TABLE forwarded_messages
-        ADD COLUMN IF NOT EXISTS string_array_column text[];
+        ADD COLUMN IF NOT EXISTS file_ids text[];
     """)
     op.execute("""
         UPDATE forwarded_messages
