@@ -13,7 +13,7 @@ alembic upgrade head
 #### add chat settings
 ```sql
 INSERT INTO chat_settings (variable_name, value, chat_id, user_id)
-VALUES ('min_forward_message_length', <min lenght len>, chat_id, user_id);
+VALUES ('min_forward_message_length', <min lenght len>, to_chat_id, user_id);
 ```
 #### add hashtags
 ```sql

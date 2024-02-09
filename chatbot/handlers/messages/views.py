@@ -35,7 +35,7 @@ async def process_new_message(
     file_ids: list[str] = None,
 ) -> int:
     need_forward = await check_message_length(
-        from_chat_id=message.chat.id, message_text=message_text
+        to_chat_id=to_chat_id, message_text=message_text
     )
     if not need_forward:
         return 1
@@ -111,7 +111,7 @@ async def process_edited_message(
     is_message_deleted: bool = result["is_deleted"]
 
     need_edit = await check_message_length(
-        from_chat_id=message.chat.id, message_text=message_text
+        to_chat_id=to_chat_id, message_text=message_text
     )
     # if length after edited message less than GLOBAL_VARS - need to delete message from channel
     if not need_edit:
