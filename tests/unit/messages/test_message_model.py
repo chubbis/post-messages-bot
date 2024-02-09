@@ -14,7 +14,7 @@ async def test_save_new_message():
         is_private=False,
         model_type="text",
         message_text="super important text",
-        file_id=None,
+        file_ids=None,
         entities="",
     )
     assert result == 33333

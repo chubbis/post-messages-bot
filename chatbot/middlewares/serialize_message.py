@@ -29,19 +29,21 @@ class SerializeMessageMiddleware(BaseMiddleware):
         data["message_text"] = getattr(event, TextPath[model_type].value, "")
         data["entities"] = self.__get_entities(event, model_type)
 
-        if model_type == "photo":
-            data["file_id"] = event.photo[0].file_id
-        if model_type == "document":
-            if event.document.mime_type != "application/pdf":
-                return
-            data["file_id"] = event.document.file_id
+        if model_type == ModelTypeEnum.photo_message.value:
+            data["file_ids"] = [event.photo[0].file_id]
+        if model_type == ModelTypeEnum.document_message.value:
+            data["file_ids"] = [event.document.file_id]
+        if model_type == ModelTypeEnum.media_group_message.value:
+            data["file_ids"] = data.get("media_group_file_ids")
         result = await handler(event, data)
         return result
 
     @staticmethod
     def __get_model_type(message: "Message") -> str | None:
         model_type = ""
-        if message.photo:
+        if message.media_group_id and message.photo:
+            model_type = ModelTypeEnum.media_group_message.value
+        elif message.photo:
             model_type = ModelTypeEnum.photo_message.value
         elif message.document:
             if message.document.mime_type == "application/pdf":

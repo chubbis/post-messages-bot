@@ -9,3 +9,4 @@ translations
 *.csv
 /.python-version
 supervisorctl.prod.conf
+/x-scripts/

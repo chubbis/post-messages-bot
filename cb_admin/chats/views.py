@@ -8,8 +8,8 @@ from models.chats.models import Chat
 
 
 async def get_chat_by_id(
-        chat_id: int,
-        _: dict = Depends(check_app_key),
+    chat_id: int,
+    _: dict = Depends(check_app_key),
 ):
     chat = await Chat.get_chat_by_id(chat_id=chat_id)
     if not chat:
@@ -18,9 +18,9 @@ async def get_chat_by_id(
 
 
 async def get_chats(
-        next_page: str = Query(None, description="Next page key"),
-        limit: int = Query(10, description="Response Limit", ge=1, le=20),
-        _: dict = Depends(check_app_key),
+    next_page: str = Query(None, description="Next page key"),
+    limit: int = Query(10, description="Response Limit", ge=1, le=20),
+    _: dict = Depends(check_app_key),
 ):
     if next_page:
         query_obj = ChatsNextPageQuery.from_str(next_page)
