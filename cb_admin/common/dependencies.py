@@ -5,17 +5,16 @@ from fastapi.security import APIKeyHeader
 from jose.exceptions import JWTError
 
 from cb_admin.common.jwt_token import get_token_data
-
 from models.users.models import UserToken
 
 
 async def check_app_key(
-        auth_bearer: str = Depends(
-            APIKeyHeader(
-                name="Authorization",
-                description="access token",
-            )
+    auth_bearer: str = Depends(
+        APIKeyHeader(
+            name="Authorization",
+            description="access token",
         )
+    )
 ):
     _, access_token = auth_bearer.split(" ")
 

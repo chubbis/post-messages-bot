@@ -14,43 +14,43 @@ from models.messages.models import ForwardedMessage
 
 
 async def get_message(
-        message_id: int,
-        _: dict = Depends(check_app_key),
+    message_id: int,
+    _: dict = Depends(check_app_key),
 ) -> MessageBase:
     message = await ForwardedMessage.get_message_by_id(message_id=message_id)
     return MessageBase(**message)
 
 
 async def get_messages(
-        request: Request,
-        next_page: str = Query(None, description="Next page token"),
-        from_chat_ids: list[int] = Query(
-            None, description="List of chat ids, where message was posted"
-        ),
-        from_chat_usernames: list[str] = Query(
-            None, description="List of chat usernames, where message was posted"
-        ),
-        to_chat_ids: list[int] = Query(
-            None, description="List of chat ids where message was forwarded"
-        ),
-        to_chat_usernames: list[str] = Query(
-            None, description="List of chat usernames where message was forwarded"
-        ),
-        from_user_ids: list[int] = Query(
-            None, description="List of user ids, who posted this message"
-        ),
-        from_user_usernames: list[str] = Query(
-            None, description="List of user usernames, who posted this message"
-        ),
-        has_text: bool = Query(
-            True, description="Messages, there message text is not null (historical)"
-        ),
-        order_by: list[str] = Query(
-            [f"{ForwardedMessage.__tablename__}.id"], description="Fields to order by"
-        ),
-        order_type_desc: bool = Query(False, description="Sorting direction"),
-        limit: int = Query(10, ge=1, le=20, description="Records limit"),
-        _: dict = Depends(check_app_key),
+    request: Request,
+    next_page: str = Query(None, description="Next page token"),
+    from_chat_ids: list[int] = Query(
+        None, description="List of chat ids, where message was posted"
+    ),
+    from_chat_usernames: list[str] = Query(
+        None, description="List of chat usernames, where message was posted"
+    ),
+    to_chat_ids: list[int] = Query(
+        None, description="List of chat ids where message was forwarded"
+    ),
+    to_chat_usernames: list[str] = Query(
+        None, description="List of chat usernames where message was forwarded"
+    ),
+    from_user_ids: list[int] = Query(
+        None, description="List of user ids, who posted this message"
+    ),
+    from_user_usernames: list[str] = Query(
+        None, description="List of user usernames, who posted this message"
+    ),
+    has_text: bool = Query(
+        True, description="Messages, there message text is not null (historical)"
+    ),
+    order_by: list[str] = Query(
+        [f"{ForwardedMessage.__tablename__}.id"], description="Fields to order by"
+    ),
+    order_type_desc: bool = Query(False, description="Sorting direction"),
+    limit: int = Query(10, ge=1, le=20, description="Records limit"),
+    _: dict = Depends(check_app_key),
 ) -> MessagesOutput:
     if next_page:
         query_obj = MessagesNextPageQuery.from_str(next_page)
@@ -86,9 +86,9 @@ async def get_messages(
 
 
 async def download_file(
-        file_id: str,
-        model_type: AvailableFilesModelType,
-        _: dict = Depends(check_app_key),
+    file_id: str,
+    model_type: AvailableFilesModelType,
+    _: dict = Depends(check_app_key),
 ) -> StreamingResponse:
     try:
         file = await bot.get_file(file_id=file_id)

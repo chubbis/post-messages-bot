@@ -1,6 +1,7 @@
 from aiogram import Dispatcher
 
 from chatbot.handlers.messages.handlers import messages_router
+from chatbot.middlewares.media_group import MediaGroupMiddleware
 from chatbot.middlewares.serialize_message import SerializeMessageMiddleware
 from common.lib.bot import bot
 
@@ -8,6 +9,9 @@ dp = Dispatcher()
 
 
 # add middleware
+messages_router.message.outer_middleware(MediaGroupMiddleware())
+messages_router.edited_message.outer_middleware(MediaGroupMiddleware())
+
 messages_router.message.middleware(SerializeMessageMiddleware())
 messages_router.edited_message.middleware(SerializeMessageMiddleware())
 

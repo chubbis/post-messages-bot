@@ -40,7 +40,7 @@ class Users(Base):
 
     @classmethod
     async def update_or_create_user(
-            cls, user_id: int, username: str, is_admin: bool = False
+        cls, user_id: int, username: str, is_admin: bool = False
     ):
         query = f"""
             INSERT INTO {Users.__tablename__} (id, username, is_admin)

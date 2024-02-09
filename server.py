@@ -8,7 +8,7 @@ from config import config
 
 logging.basicConfig(
     format="%(filename)s [ LINE:%(lineno)+3s ]#%(levelname)+8s [%(asctime)s]  %(message)s",
-    level=logging.DEBUG,
+    level=logging.DEBUG if config.DEBUG else logging.INFO,
 )
 
 logger = logging.getLogger(__name__)
@@ -31,7 +31,9 @@ def run_service(service: str):
         case ServicesEnum.cb_admin.value:
             from cb_admin.server import CBAdminServer
 
-            cb_admin_server = CBAdminServer(host=config.APP_HOST, port=config.APP_PORT, debug=True)
+            cb_admin_server = CBAdminServer(
+                host=config.APP_HOST, port=config.APP_PORT, debug=config.DEBUG
+            )
             loop.run_until_complete(cb_admin_server())
         case ServicesEnum.create_access_token.value:
             from cb_admin.common.jwt_token import create_access_token

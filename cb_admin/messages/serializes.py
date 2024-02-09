@@ -23,14 +23,18 @@ def serialize_messages(request: "Request", messages: list) -> list[dict]:
         if isinstance(message["from_user_info"], str):
             message["from_user_info"] = json.loads(message["from_user_info"])
 
-        if message["file_id"]:
-            message["file_link"] = str(
-                request.url_for(
-                    "download_captures",
-                    model_type=message["model_type"],
-                    file_id=message["file_id"],
+        if message["file_ids"]:
+            message["file_links"] = []
+            for file_id in message["file_ids"]:
+                message["file_links"].append(
+                    str(
+                        request.url_for(
+                            "download_captures",
+                            model_type=message["model_type"],
+                            file_id=file_id,
+                        )
+                    )
                 )
-            )
 
         result.append(message)
 
