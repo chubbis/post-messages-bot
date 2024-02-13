@@ -50,7 +50,9 @@ async def process_new_message(
         "photo": file_ids[0]
         if model_type == ModelTypeEnum.photo_message.value
         else file_ids,
-        "document": file_ids,
+        "document": file_ids[0]
+        if file_ids and ModelTypeEnum.document_message.value
+        else file_ids,
         "caption_entities": message.caption_entities,
     }
     result = await SEND_MESSAGE_MAP[model_type](**params)
@@ -130,7 +132,9 @@ async def process_edited_message(
         "photo": db_file_ids[0]
         if model_type == ModelTypeEnum.photo_message.value
         else db_file_ids,
-        "document": file_ids,
+        "document": file_ids[0]
+        if file_ids and ModelTypeEnum.document_message.value
+        else file_ids,
     }
     if is_message_deleted:
         updated_message = await SEND_MESSAGE_MAP[model_type](**params)
