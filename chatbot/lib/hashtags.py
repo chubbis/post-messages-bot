@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import re
 
 from aiogram import types
 from aiogram.filters import Filter
@@ -40,10 +41,10 @@ class HashTagService(Filter):
         hashtags = []
         if entities is None:
             entities = []
+        prepared_text = self.remove_emojis(text)
         for entity in entities:
             if entity.type == "hashtag":
-                hashtags.append(self.__get_text(text, entity))
-
+                hashtags.append(self.__get_text(prepared_text, entity))
         return hashtags
 
     @staticmethod
@@ -92,6 +93,21 @@ class HashTagService(Filter):
             from_chat_id,
             group_ids,
         )
+
+    @staticmethod
+    def remove_emojis(text):
+        emoji_pattern = re.compile(
+            "["
+            "\U0001F600-\U0001F64F"  # эмодзи обычных лиц
+            "\U0001F300-\U0001F5FF"  # другие символы и пиктограммы
+            "\U0001F680-\U0001F6FF"  # символы транспорта и карты
+            "\U0001F1E0-\U0001F1FF"  # флаги (iOS)
+            "]+",
+            flags=re.UNICODE,
+        )
+        # replace emoji with two symbols
+        result = emoji_pattern.sub(r"12", text)
+        return result
 
 
 hashtags_service = HashTagService()
