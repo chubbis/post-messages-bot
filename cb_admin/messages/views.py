@@ -15,7 +15,6 @@ from models.messages.models import ForwardedMessage
 
 async def get_message(
     message_id: int,
-    _: dict = Depends(check_app_key),
 ) -> MessageBase:
     message = await ForwardedMessage.get_message_by_id(message_id=message_id)
     return MessageBase(**message)
@@ -50,7 +49,6 @@ async def get_messages(
     ),
     order_type_desc: bool = Query(False, description="Sorting direction"),
     limit: int = Query(10, ge=1, le=20, description="Records limit"),
-    _: dict = Depends(check_app_key),
 ) -> MessagesOutput:
     if next_page:
         query_obj = MessagesNextPageQuery.from_str(next_page)
@@ -88,7 +86,6 @@ async def get_messages(
 async def download_file(
     file_id: str,
     model_type: AvailableFilesModelType,
-    _: dict = Depends(check_app_key),
 ) -> StreamingResponse:
     try:
         file = await bot.get_file(file_id=file_id)
